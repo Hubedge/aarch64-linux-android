@@ -1,0 +1,36 @@
+language: c
+
+compiler: gcc
+
+dist: xenial
+
+install:
+- unset CC
+- sudo systemctl enable mysql
+- sudo service mysql start
+- sudo -E apt update
+- sudo -E apt -yq install texinfo lzip help2man libtool-bin
+- wget -q http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-1.24.0-rc2.tar.xz
+- tar xf crosstool-ng-1.24.0-rc2.tar.xz
+- cd crosstool-ng-1.24.0-rc2
+- "./configure"
+- make && sudo make install
+- cd ..
+
+script:
+- cd aarch64-xtool
+- ct-ng build
+
+after_success:
+- cd ~/x-tools/
+- tar cfJ aarch64-linux-android.tar.xz aarch64-linux-android
+- mv aarch64-linux-android.tar.xz /home/travis/build/Hubedge/aarch64-linux-android/aarch64-linux-android.tar.xz
+
+deploy:
+  provider: releases
+  api_key:
+    secure: XZcZlzqbVkjsZpCa+gZ/wAosmqdcRkF7i2Iw/iKiFxgJuhiqXL6ctmJ2bmo7ugYtug0H8mV/H2IjEe0q90i/nfUzpGUvTfG4zbrx3QnzE3+I1ktxRM2FYQZtaJQrzoV8+f4vYuFoWr8DYRiysQq/Z8nmyA+Q59FXPQtm58kKn5ODGS9tdezpiWFxGzdF+QMwUpFZZ65qj/9yiqqUEZPE6H8o/Za/00zpM3gqfpC7YNr2NmTTduq3PvTLQjzVDiP3cYqSZ6pP2jXeU8pSRgDv+5lTO5uUOyxVcTfvZFn+pcvRpiogI67VZGDYU7RdO3AhxcDSk1ruMKHhgqJWQWt0J3hCyXo3zAnjiYCKhAm8frc64KdwYszz1qkj5K/QQMqqUQaOjKdq3V6eCroAAox0VYiDIaLpn51707Jp/xTCu07BXu5Vz5DAcvjeJSGiIgJfwYw5N9pIavR3Q1Vi/D+6xzRBGAkz4Fa6qUOx31Nrz23Tj5plN1eFXqbeRCqzKBIUCGXe6TZAucBgwR8ZNNs9QGq2y3uXQyNHAdMgwrHi9gU+4SMD7sEJfPbXFuntVwvnlJnmu2wzO2FX1P3G6LJIGp1fJSOPr+KDN84PO72t1BDLp/W79hmLPWf14hMAMzoaETHZqyCuhtXG4i3epqJibj9pXxAbMRwgqgSbDpPx4BY=
+  file: "/home/travis/build/Hubedge/aarch64-linux-android/aarch64-linux-android.tar.xz"
+  skip_cleanup: true
+  on:
+    tags: true
